@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Distributed Task Scheduler</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="dashboard">
+    <header>
+      <div>
+        <p class="pill">Distributed Task Scheduler</p>
+        <h1>Task Scheduler + Worker Pool</h1>
+        <p class="sub">Simulated distributed queue with retry logic and live monitoring.</p>
+      </div>
+      <div class="top-right">
+        <button id="refresh">Refresh Stats</button>
+      </div>
+    </header>
+
+    <section class="cards" id="statsCards"></section>
+
+    <section class="pane">
+      <div class="pane-header">
+        <h2>Live Worker Tracker</h2>
+        <small>Polls every 2s</small>
+      </div>
+      <div id="workers"></div>
+    </section>
+
+    <section class="pane">
+      <div class="pane-header"><h2>Endpoints</h2></div>
+      <div class="endpoint-grid">
+        <div class="endpoint"><span>/health</span>Check status and queue length</div>
+        <div class="endpoint"><span>/dashboard?endpoint=stats</span>Get scheduler stats</div>
+        <div class="endpoint"><span>/dashboard?endpoint=workers</span>Get active workers</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    async function loadStats() {
+      const resp = await fetch('/dashboard?endpoint=stats');
+      const data = await resp.json();
+      const cards = document.getElementById('statsCards');
+      cards.innerHTML = `
+        <div class="card"><h3>Scheduled</h3><p>${data.scheduled}</p></div>
+        <div class="card"><h3>Completed</h3><p>${data.completed}</p></div>
+        <div class="card"><h3>Failed</h3><p>${data.failed}</p></div>
+        <div class="card"><h3>Queue Length</h3><p>${data.queueLength}</p></div>
+        <div class="card"><h3>Workers</h3><p>${data.activeWorkers}</p></div>
+        <div class="card"><h3>Store</h3><p>${data.store}</p></div>
+      `;
+      const workResp = await fetch('/dashboard?endpoint=workers');
+      const workersData = await workResp.json();
+      const workersDiv = document.getElementById('workers');
+      workersDiv.innerHTML = workersData.activeWorkers.length > 0 ? workersData.activeWorkers.map(w => `<div class="worker"><div><strong>${w.workerId}</strong></div><div>${w.lastSeen}</div></div>`).join('') : '<div class="worker">No active workers yet.</div>';
+    }
+    document.getElementById('refresh').onclick = loadStats;
+    loadStats();
+    setInterval(loadStats, 2500);
+  </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+version: '3.9'
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  scheduler:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+
+  worker1:
+    build: .
+    command: npm run worker
+    environment:
+      - API_URL=http://scheduler:3000
+      - WORKER_ID=worker1
+    depends_on:
+      - scheduler
+
+  worker2:
+    build: .
+    command: npm run worker
+    environment:
+      - API_URL=http://scheduler:3000
+      - WORKER_ID=worker2
+    depends_on:
+      - scheduler
+
+  worker3:
+    build: .
+    command: npm run worker
+    environment:
+      - API_URL=http://scheduler:3000
+      - WORKER_ID=worker3
+    depends_on:
+      - scheduler
