@@ -54,13 +54,3 @@ node worker.js
 ```bash
 docker compose up --build
 ```
-
-## GitHub Repo Setup
-
-1. Create a new repository on GitHub.
-2. Add remote and push:
-   ```bash
-git remote add origin https://github.com/<your-username>/<repo-name>.git
-git branch -M main
-git push -u origin main
-```
